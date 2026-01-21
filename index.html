@@ -399,7 +399,7 @@
 
 <div class="currency-bar">
   <div class="currency-icon">
-    <img src="https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg" alt="Currency">
+    <img src="assets/Coin.svg" alt="Currency">
   </div>
   <div class="currency-amount" id="currencyAmount">0</div>
 </div>
@@ -559,16 +559,16 @@
     { id: 'coin100', type: 'coin', value: 100, chance: 4, icon: 'coin' },
     { id: 'coin250', type: 'coin', value: 250, chance: 2, icon: 'coin' },
     { id: 'coin500', type: 'coin', value: 500, chance: 1, icon: 'coin' },
-    { id: 'giftHeart', type: 'gift', value: 'Heart', chance: 2, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftHeart.json' },
-    { id: 'giftBear', type: 'gift', value: 'Bear', chance: 2, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftBear.json' },
-    { id: 'giftRose', type: 'gift', value: 'Rose', chance: 1.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRose.json' },
-    { id: 'giftGift', type: 'gift', value: 'Gift', chance: 1.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftGift.json' },
-    { id: 'giftCake', type: 'gift', value: 'Cake', chance: 1, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftCake.json' },
-    { id: 'giftRoseBouquet', type: 'gift', value: 'Rose Bouquet', chance: 1, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRoseBouquet.json' },
-    { id: 'giftRing', type: 'gift', value: 'Ring', chance: 0.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRing.json' },
-    { id: 'giftTrophy', type: 'gift', value: 'Trophy', chance: 0.3, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftTrophy.json' },
-    { id: 'giftDiamond', type: 'gift', value: 'Diamond', chance: 0.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftDiamond.json' },
-    { id: 'giftCalendar', type: 'gift', value: 'Calendar', chance: 0.05, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftCalendar.json' }
+    { id: 'giftHeart', type: 'gift', value: 'Heart', chance: 2, lottie: 'assets/giftHeart.json' },
+    { id: 'giftBear', type: 'gift', value: 'Bear', chance: 2, lottie: 'assets/giftBear.json' },
+    { id: 'giftRose', type: 'gift', value: 'Rose', chance: 1.5, lottie: 'assets/giftRose.json' },
+    { id: 'giftGift', type: 'gift', value: 'Gift', chance: 1.5, lottie: 'assets/giftGift.json' },
+    { id: 'giftCake', type: 'gift', value: 'Cake', chance: 1, lottie: 'assets/giftCake.json' },
+    { id: 'giftRoseBouquet', type: 'gift', value: 'Rose Bouquet', chance: 1, lottie: 'assets/giftRoseBouquet.json' },
+    { id: 'giftRing', type: 'gift', value: 'Ring', chance: 0.5, lottie: 'assets/giftRing.json' },
+    { id: 'giftTrophy', type: 'gift', value: 'Trophy', chance: 0.3, lottie: 'assets/giftTrophy.json' },
+    { id: 'giftDiamond', type: 'gift', value: 'Diamond', chance: 0.5, lottie: 'assets/giftDiamond.json' },
+    { id: 'giftCalendar', type: 'gift', value: 'Calendar', chance: 0.05, lottie: 'assets/giftCalendar.json' }
   ];
 
   function selectPrize() {
@@ -597,7 +597,7 @@
       
       if (prize.type === 'coin') {
         const img = document.createElement('img');
-        img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+        img.src = 'assets/Coin.svg';
         img.alt = 'Coin';
         img.style.width = '70px';
         img.style.height = '70px';
@@ -674,7 +674,7 @@
       
       if (prize.type === 'coin') {
         const img = document.createElement('img');
-        img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+        img.src = 'assets/Coin.svg';
         img.alt = 'Coin';
         img.style.width = '70px';
         img.style.height = '70px';
@@ -776,7 +776,7 @@
       
       if (winningPrize.type === 'coin') {
         const img = document.createElement('img');
-        img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+        img.src = 'assets/Coin.svg';
         img.alt = 'Coin';
         img.style.width = '70px';
         img.style.height = '70px';
@@ -912,22 +912,22 @@
   coinIds.forEach(id => {
     const container = document.getElementById(id);
     const img = document.createElement('img');
-    img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+    img.src = 'assets/Coin.svg';
     img.alt = 'Coin';
     container.appendChild(img);
   });
 
   const gifts = [
-    { id: 'giftHeart', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftHeart.json' },
-    { id: 'giftBear', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftBear.json' },
-    { id: 'giftGift', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftGift.json' },
-    { id: 'giftRose', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRose.json' },
-    { id: 'giftCake', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftCake.json' },
-    { id: 'giftRoseBouquet', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRoseBouquet.json' },
-    { id: 'giftRing', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftRing.json' },
-    { id: 'giftTrophy', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftTrophy.json' },
-    { id: 'giftDiamond', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftDiamond.json' },
-    { id: 'giftCalendar', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/giftCalendar.json' }
+    { id: 'giftHeart', json: 'assets/giftHeart.json' },
+    { id: 'giftBear', json: 'assets/giftBear.json' },
+    { id: 'giftGift', json: 'assets/giftGift.json' },
+    { id: 'giftRose', json: 'assets/giftRose.json' },
+    { id: 'giftCake', json: 'assets/giftCake.json' },
+    { id: 'giftRoseBouquet', json: 'assets/giftRoseBouquet.json' },
+    { id: 'giftRing', json: 'assets/giftRing.json' },
+    { id: 'giftTrophy', json: 'assets/giftTrophy.json' },
+    { id: 'giftDiamond', json: 'assets/giftDiamond.json' },
+    { id: 'giftCalendar', json: 'assets/giftCalendar.json' }
   ];
 
   gifts.forEach(gift => {
