@@ -559,7 +559,9 @@
   // State variables
   let virtualCurrency = 0;
   let isSpinning = false;
-  let allowCubeRegeneration = true; // NEW: Control cube regeneration
+  let allowCubeRegeneration = true;
+  let isSnapping = false; // NEW: Hard lock during snap
+  let lockedWinnerCube = null; // NEW: Reference to winner cube
 
   // Infinite scroll variables
   let scrollPosition = 0;
@@ -679,13 +681,21 @@
     const cubes = Array.from(document.querySelectorAll('.cube'));
     const containerCenter = wheelContainer.offsetWidth / 2;
     
-    // Update scroll position
-    scrollPosition += scrollSpeed;
+    // CRITICAL: Stop ALL mutations during snap
+    if (!isSnapping) {
+      scrollPosition += scrollSpeed;
+    }
     
     // Check if first cube has scrolled past left edge
-    if (scrollPosition >= totalCubeWidth && allowCubeRegeneration) {
-      // Move first cube to the end
+    if (scrollPosition >= totalCubeWidth && allowCubeRegeneration && !isSnapping) {
       const firstCube = cubes[0];
+      
+      // CRITICAL: Never touch locked cube
+      if (firstCube.dataset.locked === 'true') {
+        requestAnimationFrame(updateCubesAndScroll);
+        return;
+      }
+      
       wheel.appendChild(firstCube);
       scrollPosition -= totalCubeWidth;
       
@@ -734,11 +744,6 @@
           path: prize.lottie
         });
       }
-    } else if (scrollPosition >= totalCubeWidth && !allowCubeRegeneration) {
-      // During spin: just move cubes without regenerating
-      const firstCube = cubes[0];
-      wheel.appendChild(firstCube);
-      scrollPosition -= totalCubeWidth;
     }
     
     // Apply scroll transform
