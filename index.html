@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Spin</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+    font-family: 'Manrope', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: #0f1a24;
+    position: relative;
+    color: #ffffff;
+  }
+
+  /* Moving SVG Background - Fixed */
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .bg svg {
+    width: 500%;
+    height: 500%;
+    position: absolute;
+    top: -200%;
+    left: -200%;
+    animation: moveDiagonal 30s linear infinite;
+  }
+
+  @keyframes moveDiagonal {
+    0% {
+      transform: translate(0, 0);
+    }
+    100% {
+      transform: translate(562.5px, 1218px);
+    }
+  }
+
+  /* Currency Bar */
+  .currency-bar {
+    position: fixed;
+    top: 1.5rem;
+    right: 1.5rem;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(18, 25, 36, 0.85);
+    backdrop-filter: blur(15px);
+    border: none;
+    border-radius: 50px;
+    padding: 0.65rem 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .currency-bar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4);
+    background: rgba(20, 28, 40, 0.9);
+  }
+
+  .currency-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    order: 1;
+  }
+
+  .currency-icon {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    order: 0;
+  }
+
+  .currency-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(139, 92, 246, 0.3));
+  }
+
+  /* Hamburger Menu */
+  .hamburger {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    background: rgba(26, 35, 50, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+  }
+
+  .hamburger:hover {
+    background: rgba(26, 35, 50, 0.8);
+  }
+
+  .hamburger span {
+    display: block;
+    width: 24px;
+    height: 2.5px;
+    background: #ffffff;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Main Container */
+  .container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    padding-top: 6rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  /* Spin Wheel Section */
+  .spin-section {
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .wheel-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  }
+
+  .wheel-pointer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 0%, #60a5fa 45%, #60a5fa 55%, transparent 100%);
+    z-index: 10;
+    filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+  }
+
+  .wheel {
+    display: flex;
+    gap: 3rem;
+  }
+
+  .cube {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+    border: 3px solid rgba(96, 165, 250, 0.4);
+    border-radius: 8px;
+    background: rgba(26, 35, 50, 0.3);
+    backdrop-filter: blur(10px);
+    transition: transform 0.05s ease, border-color 0.05s ease, box-shadow 0.05s ease;
+  }
+
+  .wheel-container::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 180px;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .spin-button {
+    background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 3rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(96, 165, 250, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .spin-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(96, 165, 250, 0.6);
+  }
+
+  .spin-button:active {
+    transform: translateY(0);
+  }
+
+  .spin-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Rewards Section */
+  .rewards-section {
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .rewards-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .rewards-header .icon {
+    width: 24px;
+    height: 24px;
+    color: #ef4444;
+  }
+
+  .rewards-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .rewards-title .get-text {
+    color: #fbbf24;
+  }
+
+  /* Reward Grid */
+  .reward-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .reward-item {
+    background: rgba(26, 35, 50, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .reward-item:hover {
+    transform: translateY(-4px);
+    border-color: rgba(157, 78, 221, 0.5);
+    box-shadow: 0 8px 25px rgba(157, 78, 221, 0.3);
+  }
+
+  .reward-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .reward-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .reward-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .reward-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+  }
+
+  /* Gift Items */
+  .gift-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .gift-item {
+    background: rgba(26, 35, 50, 0.6);
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .gift-item:hover {
+    transform: translateY(-4px);
+    border-color: rgba(245, 194, 107, 0.5);
+    box-shadow: 0 8px 25px rgba(245, 194, 107, 0.3);
+  }
+
+  .gift-icon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .gift-label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .reward-grid,
+    .gift-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .reward-grid,
+    .gift-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.75rem;
+    }
+
+    .reward-icon,
+    .gift-icon {
+      width: 50px;
+      height: 50px;
+    }
+
+    .container {
+      padding: 1.5rem;
+      padding-top: 5rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" id="bgContainer">
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="100%" height="100%">
+    <defs>
+      <pattern id="tgPattern" patternUnits="userSpaceOnUse" width="562.5" height="1218" viewBox="0 0 1125 2436">
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#tgPattern)" />
+  </svg>
+</div>
+
+<!-- Currency Bar -->
+<div class="currency-bar">
+  <div class="currency-icon">
+    <img src="https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg" alt="Currency">
+  </div>
+  <div class="currency-amount" id="currencyAmount">0</div>
+</div>
+
+<!-- Hamburger Menu Button -->
+<div class="hamburger" id="hamburger">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+
+<!-- Main Container -->
+<div class="container">
+  <!-- Spin Wheel Section -->
+  <div class="spin-section">
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <div class="wheel" id="wheel">
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <!-- Duplicate for seamless loop -->
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+        <div class="cube"></div>
+      </div>
+    </div>
+    <button class="spin-button" id="spinButton">SPIN!</button>
+  </div>
+
+  <!-- Rewards Section -->
+  <div class="rewards-section">
+    <div class="rewards-header">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <h2 class="rewards-title">What can I <span class="get-text">get?</span></h2>
+    </div>
+
+    <!-- Coin Rewards Grid -->
+    <div class="reward-grid">
+      <div class="reward-item">
+        <div class="reward-amount">1</div>
+        <div class="reward-icon" id="coin1"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">5</div>
+        <div class="reward-icon" id="coin5"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">10</div>
+        <div class="reward-icon" id="coin10"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">25</div>
+        <div class="reward-icon" id="coin25"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">50</div>
+        <div class="reward-icon" id="coin50"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">100</div>
+        <div class="reward-icon" id="coin100"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">250</div>
+        <div class="reward-icon" id="coin250"></div>
+      </div>
+      <div class="reward-item">
+        <div class="reward-amount">500</div>
+        <div class="reward-icon" id="coin500"></div>
+      </div>
+    </div>
+
+    <!-- Gift Items Grid -->
+    <div class="gift-grid">
+      <div class="gift-item">
+        <div class="gift-icon" id="giftHeart"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftBear"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftGift"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftRose"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftCake"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftRoseBouquet"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftRing"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftTrophy"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftDiamond"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+      <div class="gift-item">
+        <div class="gift-icon" id="giftCalendar"></div>
+        <div class="gift-label">Telegram Premium</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script>
+  // DOM Elements
+  const hamburger = document.getElementById('hamburger');
+  const currencyAmount = document.getElementById('currencyAmount');
+  const spinButton = document.getElementById('spinButton');
+  const wheel = document.getElementById('wheel');
+  const wheelContainer = document.querySelector('.wheel-container');
+
+  // State variables
+  let virtualCurrency = 0;
+  let isSpinning = false;
+  let allowCubeRegeneration = true; // NEW: Control cube regeneration
+
+  // Infinite scroll variables
+  let scrollPosition = 0;
+  let scrollSpeed = 1; // pixels per frame
+  const cubeWidth = 120;
+  const gapWidth = 48; // 3rem in pixels
+  const totalCubeWidth = cubeWidth + gapWidth;
+
+  // Prize configuration with chances
+  const prizes = [
+    { id: 'coin1', type: 'coin', value: 1, chance: 25, icon: 'coin' },
+    { id: 'coin5', type: 'coin', value: 5, chance: 15, icon: 'coin' },
+    { id: 'coin10', type: 'coin', value: 10, chance: 10, icon: 'coin' },
+    { id: 'coin25', type: 'coin', value: 25, chance: 8, icon: 'coin' },
+    { id: 'coin50', type: 'coin', value: 50, chance: 5, icon: 'coin' },
+    { id: 'coin100', type: 'coin', value: 100, chance: 4, icon: 'coin' },
+    { id: 'coin250', type: 'coin', value: 250, chance: 2, icon: 'coin' },
+    { id: 'coin500', type: 'coin', value: 500, chance: 1, icon: 'coin' },
+    { id: 'giftHeart', type: 'gift', value: 'Heart', chance: 2, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/HeartGift.json' },
+    { id: 'giftBear', type: 'gift', value: 'Bear', chance: 2, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/BearGift.json' },
+    { id: 'giftRose', type: 'gift', value: 'Rose', chance: 1.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RoseGift.json' },
+    { id: 'giftGift', type: 'gift', value: 'Gift', chance: 1.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/GiftGif.json' },
+    { id: 'giftCake', type: 'gift', value: 'Cake', chance: 1, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/CakeGift.json' },
+    { id: 'giftRoseBouquet', type: 'gift', value: 'Rose Bouquet', chance: 1, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RBGift.json' },
+    { id: 'giftRing', type: 'gift', value: 'Ring', chance: 0.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RingGift.json' },
+    { id: 'giftTrophy', type: 'gift', value: 'Trophy', chance: 0.3, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/TrophyGift.json' },
+    { id: 'giftDiamond', type: 'gift', value: 'Diamond', chance: 0.5, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/DiamondGift.json' },
+    { id: 'giftCalendar', type: 'gift', value: 'Calendar', chance: 0.05, lottie: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/CalGift.json' }
+  ];
+
+  // Function to select a prize based on chances
+  function selectPrize() {
+    const random = Math.random() * 100;
+    let cumulative = 0;
+    
+    for (let prize of prizes) {
+      cumulative += prize.chance;
+      if (random <= cumulative) {
+        return prize;
+      }
+    }
+    
+    return prizes[0]; // Fallback to 1 coin
+  }
+
+  // Function to populate cubes with prizes
+  function populateCubes() {
+    const cubes = document.querySelectorAll('.cube');
+    cubes.forEach(cube => {
+      const prize = selectPrize();
+      cube.dataset.prizeId = prize.id;
+      cube.dataset.prizeType = prize.type;
+      cube.dataset.prizeValue = prize.value;
+      
+      // Clear cube
+      cube.innerHTML = '';
+      
+      // Add prize content
+      if (prize.type === 'coin') {
+        const img = document.createElement('img');
+        img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+        img.alt = 'Coin';
+        img.style.width = '70px';
+        img.style.height = '70px';
+        img.style.objectFit = 'contain';
+        img.style.margin = 'auto';
+        cube.appendChild(img);
+        
+        // Add coin value text
+        const valueText = document.createElement('div');
+        valueText.textContent = prize.value;
+        valueText.style.position = 'absolute';
+        valueText.style.top = '50%';
+        valueText.style.left = '50%';
+        valueText.style.transform = 'translate(-50%, -50%)';
+        valueText.style.fontSize = '1.5rem';
+        valueText.style.fontWeight = '700';
+        valueText.style.color = '#ffffff';
+        valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
+        cube.appendChild(valueText);
+      } else {
+        // Gift animation
+        const container = document.createElement('div');
+        container.style.width = '80px';
+        container.style.height = '80px';
+        container.style.margin = 'auto';
+        cube.appendChild(container);
+        
+        lottie.loadAnimation({
+          container: container,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: prize.lottie
+        });
+      }
+      
+      cube.style.position = 'relative';
+      cube.style.display = 'flex';
+      cube.style.alignItems = 'center';
+      cube.style.justifyContent = 'center';
+    });
+  }
+
+  // Initialize currency display
+  function updateCurrencyDisplay() {
+    currencyAmount.textContent = virtualCurrency.toLocaleString();
+  }
+
+  updateCurrencyDisplay();
+  
+  // Populate cubes with random prizes
+  populateCubes();
+
+  // Update cube scales and handle infinite scroll
+  function updateCubesAndScroll() {
+    const cubes = Array.from(document.querySelectorAll('.cube'));
+    const containerCenter = wheelContainer.offsetWidth / 2;
+    
+    // Update scroll position
+    scrollPosition += scrollSpeed;
+    
+    // Check if first cube has scrolled past left edge
+    if (scrollPosition >= totalCubeWidth && allowCubeRegeneration) {
+      // Move first cube to the end
+      const firstCube = cubes[0];
+      wheel.appendChild(firstCube);
+      scrollPosition -= totalCubeWidth;
+      
+      // Assign new prize to the cube
+      const prize = selectPrize();
+      firstCube.dataset.prizeId = prize.id;
+      firstCube.dataset.prizeType = prize.type;
+      firstCube.dataset.prizeValue = prize.value;
+      
+      // Clear and repopulate
+      firstCube.innerHTML = '';
+      
+      if (prize.type === 'coin') {
+        const img = document.createElement('img');
+        img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+        img.alt = 'Coin';
+        img.style.width = '70px';
+        img.style.height = '70px';
+        img.style.objectFit = 'contain';
+        img.style.margin = 'auto';
+        firstCube.appendChild(img);
+        
+        const valueText = document.createElement('div');
+        valueText.textContent = prize.value;
+        valueText.style.position = 'absolute';
+        valueText.style.top = '50%';
+        valueText.style.left = '50%';
+        valueText.style.transform = 'translate(-50%, -50%)';
+        valueText.style.fontSize = '1.5rem';
+        valueText.style.fontWeight = '700';
+        valueText.style.color = '#ffffff';
+        valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
+        firstCube.appendChild(valueText);
+      } else {
+        const container = document.createElement('div');
+        container.style.width = '80px';
+        container.style.height = '80px';
+        container.style.margin = 'auto';
+        firstCube.appendChild(container);
+        
+        lottie.loadAnimation({
+          container: container,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          path: prize.lottie
+        });
+      }
+    } else if (scrollPosition >= totalCubeWidth && !allowCubeRegeneration) {
+      // During spin: just move cubes without regenerating
+      const firstCube = cubes[0];
+      wheel.appendChild(firstCube);
+      scrollPosition -= totalCubeWidth;
+    }
+    
+    // Apply scroll transform
+    wheel.style.transform = `translateX(-${scrollPosition}px)`;
+    
+    // Update scales
+    cubes.forEach(cube => {
+      const cubeRect = cube.getBoundingClientRect();
+      const containerRect = wheelContainer.getBoundingClientRect();
+      const cubeCenter = cubeRect.left + cubeRect.width / 2 - containerRect.left;
+      const distance = Math.abs(cubeCenter - containerCenter);
+      
+      // Calculate scale based on distance (closer = bigger)
+      const maxDistance = containerCenter;
+      const scale = Math.max(0.6, 1.5 - (distance / maxDistance) * 0.9);
+      
+      cube.style.transform = `scale(${scale})`;
+      
+      // Adjust border and glow based on scale
+      if (scale > 1.3) {
+        cube.style.borderColor = 'rgba(96, 165, 250, 0.8)';
+        cube.style.boxShadow = '0 0 30px rgba(96, 165, 250, 0.5)';
+      } else {
+        cube.style.borderColor = 'rgba(96, 165, 250, 0.4)';
+        cube.style.boxShadow = 'none';
+      }
+    });
+    
+    requestAnimationFrame(updateCubesAndScroll);
+  }
+
+  // Start infinite scroll and scale updates
+  updateCubesAndScroll();
+
+  // Back button
+  hamburger.addEventListener('click', () => {
+    window.history.back();
+  });
+
+  // Spin wheel function with predetermined prize
+  spinButton.addEventListener('click', () => {
+    if (isSpinning) return;
+    
+    isSpinning = true;
+    spinButton.disabled = true;
+
+    // Select the winning prize BEFORE spinning
+    const winningPrize = selectPrize();
+    console.log('Selected prize:', winningPrize);
+
+    const originalSpeed = scrollSpeed;
+    const startTime = Date.now();
+    const duration = 5000; // 5 seconds total
+    const maxSpeed = 25;
+    
+    // Disable cube regeneration during spin
+    let spinningActive = true;
+    
+    function animateSpin() {
+      if (!isSpinning) return;
+      
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease-out quartic function
+      const easeProgress = 1 - Math.pow(1 - progress, 4);
+      const targetSpeed = maxSpeed * (1 - easeProgress);
+      scrollSpeed = Math.max(targetSpeed, 0.1);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        // Stop completely
+        scrollSpeed = 0;
+        spinningActive = false;
+        
+        // Wait a moment for things to settle
+        setTimeout(() => {
+          // Find closest cube to center
+          const cubes = Array.from(document.querySelectorAll('.cube'));
+          const containerCenter = wheelContainer.offsetWidth / 2;
+          let centerCube = null;
+          let minDistance = Infinity;
+          let distanceToSnap = 0;
+          
+          cubes.forEach(cube => {
+            const cubeRect = cube.getBoundingClientRect();
+            const containerRect = wheelContainer.getBoundingClientRect();
+            const cubeCenter = cubeRect.left + cubeRect.width / 2 - containerRect.left;
+            const distance = Math.abs(cubeCenter - containerCenter);
+            
+            if (distance < minDistance) {
+              minDistance = distance;
+              centerCube = cube;
+              distanceToSnap = cubeCenter - containerCenter;
+            }
+          });
+          
+          // Update the closest cube with the winning prize
+          if (centerCube) {
+            centerCube.dataset.prizeId = winningPrize.id;
+            centerCube.dataset.prizeType = winningPrize.type;
+            centerCube.dataset.prizeValue = winningPrize.value;
+            
+            // Clear and set the prize
+            centerCube.innerHTML = '';
+            
+            if (winningPrize.type === 'coin') {
+              const img = document.createElement('img');
+              img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+              img.alt = 'Coin';
+              img.style.width = '70px';
+              img.style.height = '70px';
+              img.style.objectFit = 'contain';
+              img.style.margin = 'auto';
+              centerCube.appendChild(img);
+              
+              const valueText = document.createElement('div');
+              valueText.textContent = winningPrize.value;
+              valueText.style.position = 'absolute';
+              valueText.style.top = '50%';
+              valueText.style.left = '50%';
+              valueText.style.transform = 'translate(-50%, -50%)';
+              valueText.style.fontSize = '1.5rem';
+              valueText.style.fontWeight = '700';
+              valueText.style.color = '#ffffff';
+              valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
+              centerCube.appendChild(valueText);
+            } else {
+              const container = document.createElement('div');
+              container.style.width = '80px';
+              container.style.height = '80px';
+              container.style.margin = 'auto';
+              centerCube.appendChild(container);
+              
+              lottie.loadAnimation({
+                container: container,
+                renderer: 'svg',
+                loop: true,
+                autoplay: true,
+                path: winningPrize.lottie
+              });
+            }
+          }
+          
+          // Snap to center
+          const snapStartTime = Date.now();
+          const snapDuration = 400;
+          const startScrollPos = scrollPosition;
+          
+          function snapToCenter() {
+            const snapElapsed = Date.now() - snapStartTime;
+            const snapProgress = Math.min(snapElapsed / snapDuration, 1);
+            const snapEase = 1 - Math.pow(1 - snapProgress, 3);
+            
+            scrollPosition = startScrollPos + (distanceToSnap * snapEase);
+            
+            if (snapProgress < 1) {
+              requestAnimationFrame(snapToCenter);
+            } else {
+              // Highlight winner
+              if (centerCube) {
+                centerCube.style.transition = 'all 0.3s ease';
+                centerCube.style.borderColor = '#60a5fa';
+                centerCube.style.boxShadow = '0 0 40px rgba(96, 165, 250, 0.8)';
+                
+                setTimeout(() => {
+                  centerCube.style.transition = 'transform 0.05s ease, border-color 0.05s ease, box-shadow 0.05s ease';
+                }, 300);
+              }
+              
+              setTimeout(() => {
+                // Award the prize
+                if (winningPrize.type === 'coin') {
+                  virtualCurrency += winningPrize.value;
+                  updateCurrencyDisplay();
+                  alert(`You won ${winningPrize.value} coins!`);
+                } else {
+                  alert(`You won a ${winningPrize.value} gift!`);
+                }
+                
+                // Resume normal scrolling
+                scrollSpeed = originalSpeed;
+                isSpinning = false;
+                spinButton.disabled = false;
+              }, 200);
+            }
+          }
+          
+          snapToCenter();
+        }, 100);
+      }
+    }
+    
+    animateSpin();
+  });
+
+  // Load all coin icons (using Coin.svg)
+  const coinIds = ['coin1', 'coin5', 'coin10', 'coin25', 'coin50', 'coin100', 'coin250', 'coin500'];
+  coinIds.forEach(id => {
+    const container = document.getElementById(id);
+    const img = document.createElement('img');
+    img.src = 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/assets/Coin.svg';
+    img.alt = 'Coin';
+    container.appendChild(img);
+  });
+
+  // Load gift animations
+  const gifts = [
+    { id: 'giftHeart', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/HeartGift.json' },
+    { id: 'giftBear', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/BearGift.json' },
+    { id: 'giftGift', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/GiftGif.json' },
+    { id: 'giftRose', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RoseGift.json' },
+    { id: 'giftCake', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/CakeGift.json' },
+    { id: 'giftRoseBouquet', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RBGift.json' },
+    { id: 'giftRing', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/RingGift.json' },
+    { id: 'giftTrophy', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/TrophyGift.json' },
+    { id: 'giftDiamond', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/DiamondGift.json' },
+    { id: 'giftCalendar', json: 'https://raw.githubusercontent.com/catsuits/vspin/refs/heads/main/public/CalGift.json' }
+  ];
+
+  gifts.forEach(gift => {
+    const anim = lottie.loadAnimation({
+      container: document.getElementById(gift.id),
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: gift.json
+    });
+  });
+</script>
+
+</body>
+</html>
