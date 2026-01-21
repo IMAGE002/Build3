@@ -358,6 +358,174 @@
     text-align: center;
   }
 
+  /* Win Modal Styles */
+  .win-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .win-modal-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .win-modal {
+    background: transparent;
+    border: none;
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: none;
+    transform: scale(0.9);
+    animation: modalScale 0.3s ease forwards 0.1s;
+  }
+
+  @keyframes modalScale {
+    to {
+      transform: scale(1);
+    }
+  }
+
+  .win-modal-header {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-align: center;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .win-modal-prize {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    background: rgba(26, 35, 50, 0.5);
+    border: 2px solid rgba(96, 165, 250, 0.3);
+    border-radius: 16px;
+    position: relative;
+  }
+
+  .win-modal-prize::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 16px;
+    padding: 2px;
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.5), rgba(139, 92, 246, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes borderGlow {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .win-modal-icon {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .win-modal-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    animation: prizeFloat 2s ease-in-out infinite;
+  }
+
+  @keyframes prizeFloat {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .win-modal-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 2px 10px rgba(96, 165, 250, 0.5);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+  }
+
+  .win-modal-footer {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #60a5fa;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .win-modal-footer span {
+    color: #fbbf24;
+  }
+
+  .claim-button {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: none;
+    border-radius: 50px;
+    padding: 1rem 3rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #0f1a24;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 20px rgba(251, 191, 36, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 1rem;
+  }
+
+  .claim-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 30px rgba(251, 191, 36, 0.6);
+  }
+
+  .claim-button:active {
+    transform: translateY(0);
+  }
+
   @media (max-width: 768px) {
     .reward-grid,
     .gift-grid {
@@ -381,6 +549,23 @@
     .container {
       padding: 1.5rem;
       padding-top: 5rem;
+    }
+
+    .win-modal {
+      padding: 2rem 1.5rem;
+    }
+
+    .win-modal-header {
+      font-size: 1.5rem;
+    }
+
+    .win-modal-footer {
+      font-size: 1.25rem;
+    }
+
+    .win-modal-icon {
+      width: 100px;
+      height: 100px;
     }
   }
 </style>
@@ -408,6 +593,18 @@
   <span></span>
   <span></span>
   <span></span>
+</div>
+
+<!-- Win Modal -->
+<div class="win-modal-overlay" id="winModal">
+  <div class="win-modal">
+    <div class="win-modal-header">You Won...</div>
+    <div class="win-modal-prize">
+      <div class="win-modal-icon" id="modalPrizeIcon"></div>
+    </div>
+    <div class="win-modal-footer">...<span id="modalPrizeName"></span>!!!</div>
+    <button class="claim-button" id="claimButton">CLAIM!!</button>
+  </div>
 </div>
 
 <div class="container">
@@ -537,12 +734,17 @@
   const spinButton = document.getElementById('spinButton');
   const wheel = document.getElementById('wheel');
   const wheelContainer = document.querySelector('.wheel-container');
+  const winModal = document.getElementById('winModal');
+  const modalPrizeIcon = document.getElementById('modalPrizeIcon');
+  const modalPrizeName = document.getElementById('modalPrizeName');
+  const claimButton = document.getElementById('claimButton');
 
   let virtualCurrency = 0;
   let isSpinning = false;
   let allowCubeRegeneration = true;
   let isSnapping = false;
   let lockedWinnerCube = null;
+  let currentWinningPrize = null;
 
   let scrollPosition = 0;
   let scrollSpeed = 1;
@@ -584,6 +786,63 @@
     
     return prizes[0];
   }
+
+  function showWinModal(prize) {
+    currentWinningPrize = prize;
+    
+    modalPrizeIcon.innerHTML = '';
+    
+    if (prize.type === 'coin') {
+      const img = document.createElement('img');
+      img.src = 'assets/Coin.svg';
+      img.alt = 'Coin';
+      modalPrizeIcon.appendChild(img);
+      
+      const valueText = document.createElement('div');
+      valueText.className = 'win-modal-value';
+      valueText.textContent = prize.value;
+      modalPrizeIcon.appendChild(valueText);
+      
+      modalPrizeName.textContent = `${prize.value} Coins`;
+    } else {
+      const container = document.createElement('div');
+      container.style.width = '100%';
+      container.style.height = '100%';
+      modalPrizeIcon.appendChild(container);
+      
+      lottie.loadAnimation({
+        container: container,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: prize.lottie
+      });
+      
+      modalPrizeName.textContent = `the ${prize.value}`;
+    }
+    
+    winModal.classList.add('show');
+  }
+
+  function hideWinModal() {
+    winModal.classList.remove('show');
+    setTimeout(() => {
+      modalPrizeIcon.innerHTML = '';
+    }, 300);
+  }
+
+  claimButton.addEventListener('click', () => {
+    if (currentWinningPrize && currentWinningPrize.type === 'coin') {
+      virtualCurrency += parseInt(currentWinningPrize.value);
+      updateCurrencyDisplay();
+    }
+    
+    hideWinModal();
+    currentWinningPrize = null;
+    scrollSpeed = 1;
+    isSpinning = false;
+    spinButton.disabled = false;
+  });
 
   function populateCubes() {
     const cubes = document.querySelectorAll('.cube');
@@ -881,21 +1140,11 @@
               
               setTimeout(() => {
                 if (centerCube) {
-                  const prizeType = centerCube.dataset.prizeType;
-                  const prizeValue = centerCube.dataset.prizeValue;
-                  
-                  if (prizeType === 'coin') {
-                    virtualCurrency += parseInt(prizeValue);
-                    updateCurrencyDisplay();
-                    alert(`You won ${prizeValue} coins!`);
-                  } else {
-                    alert(`You won a ${prizeValue} gift!`);
+                  const prizeData = prizes.find(p => p.id === centerCube.dataset.prizeId);
+                  if (prizeData) {
+                    showWinModal(prizeData);
                   }
                 }
-                
-                scrollSpeed = originalSpeed;
-                isSpinning = false;
-                spinButton.disabled = false;
               }, 200);
             }
           }
