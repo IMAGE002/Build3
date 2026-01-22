@@ -741,13 +741,11 @@
 
   let virtualCurrency = 0;
   let isSpinning = false;
-  let allowCubeRegeneration = true;
-  let isSnapping = false;
-  let lockedWinnerCube = null;
   let currentWinningPrize = null;
-
   let scrollPosition = 0;
   let scrollSpeed = 1;
+  let targetStopPosition = null;
+  let winningCubeIndex = null;
   const cubeWidth = 120;
   const gapWidth = 48;
   const totalCubeWidth = cubeWidth + gapWidth;
@@ -773,6 +771,7 @@
     { id: 'giftCalendar', type: 'gift', value: 'Calendar', chance: 0.06, lottie: 'assets/giftCalendar.json' }
   ];
 
+  // Single prize selection function
   function selectPrize() {
     const random = Math.random() * 100;
     let cumulative = 0;
@@ -785,6 +784,57 @@
     }
     
     return prizes[0];
+  }
+
+  // Render a prize into a cube element
+  function renderPrizeToCube(cube, prize) {
+    cube.dataset.prizeId = prize.id;
+    cube.dataset.prizeType = prize.type;
+    cube.dataset.prizeValue = prize.value;
+    
+    cube.innerHTML = '';
+    
+    if (prize.type === 'coin') {
+      const img = document.createElement('img');
+      img.src = 'assets/Coin.svg';
+      img.alt = 'Coin';
+      img.style.width = '70px';
+      img.style.height = '70px';
+      img.style.objectFit = 'contain';
+      img.style.margin = 'auto';
+      cube.appendChild(img);
+      
+      const valueText = document.createElement('div');
+      valueText.textContent = prize.value;
+      valueText.style.position = 'absolute';
+      valueText.style.top = '15%';
+      valueText.style.left = '25%';
+      valueText.style.transform = 'translate(-50%, -50%)';
+      valueText.style.fontSize = '1.5rem';
+      valueText.style.fontWeight = '700';
+      valueText.style.color = '#ffffff';
+      valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
+      cube.appendChild(valueText);
+    } else {
+      const container = document.createElement('div');
+      container.style.width = '80px';
+      container.style.height = '80px';
+      container.style.margin = 'auto';
+      cube.appendChild(container);
+      
+      lottie.loadAnimation({
+        container: container,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: prize.lottie
+      });
+    }
+    
+    cube.style.position = 'relative';
+    cube.style.display = 'flex';
+    cube.style.alignItems = 'center';
+    cube.style.justifyContent = 'center';
   }
 
   function showWinModal(prize) {
@@ -839,6 +889,8 @@
     
     hideWinModal();
     currentWinningPrize = null;
+    targetStopPosition = null;
+    winningCubeIndex = null;
     scrollSpeed = 1;
     isSpinning = false;
     spinButton.disabled = false;
@@ -848,53 +900,7 @@
     const cubes = document.querySelectorAll('.cube');
     cubes.forEach(cube => {
       const prize = selectPrize();
-      cube.dataset.prizeId = prize.id;
-      cube.dataset.prizeType = prize.type;
-      cube.dataset.prizeValue = prize.value;
-      
-      cube.innerHTML = '';
-      
-      if (prize.type === 'coin') {
-        const img = document.createElement('img');
-        img.src = 'assets/Coin.svg';
-        img.alt = 'Coin';
-        img.style.width = '70px';
-        img.style.height = '70px';
-        img.style.objectFit = 'contain';
-        img.style.margin = 'auto';
-        cube.appendChild(img);
-        
-        const valueText = document.createElement('div');
-        valueText.textContent = prize.value;
-        valueText.style.position = 'absolute';
-        valueText.style.top = '15%';
-        valueText.style.left = '25%';
-        valueText.style.transform = 'translate(-50%, -50%)';
-        valueText.style.fontSize = '1.5rem';
-        valueText.style.fontWeight = '700';
-        valueText.style.color = '#ffffff';
-        valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
-        cube.appendChild(valueText);
-      } else {
-        const container = document.createElement('div');
-        container.style.width = '80px';
-        container.style.height = '80px';
-        container.style.margin = 'auto';
-        cube.appendChild(container);
-        
-        lottie.loadAnimation({
-          container: container,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          path: prize.lottie
-        });
-      }
-      
-      cube.style.position = 'relative';
-      cube.style.display = 'flex';
-      cube.style.alignItems = 'center';
-      cube.style.justifyContent = 'center';
+      renderPrizeToCube(cube, prize);
     });
   }
 
@@ -909,63 +915,21 @@
     const cubes = Array.from(document.querySelectorAll('.cube'));
     const containerCenter = wheelContainer.offsetWidth / 2;
     
-    if (!isSnapping) {
-      scrollPosition += scrollSpeed;
-    }
+    scrollPosition += scrollSpeed;
     
-    if (scrollPosition >= totalCubeWidth && allowCubeRegeneration && !isSnapping) {
+    // Handle cube recycling
+    if (scrollPosition >= totalCubeWidth) {
       const firstCube = cubes[0];
-      
-      if (firstCube.dataset.locked === 'true') {
-        requestAnimationFrame(updateCubesAndScroll);
-        return;
-      }
-      
       wheel.appendChild(firstCube);
       scrollPosition -= totalCubeWidth;
       
-      const prize = selectPrize();
-      firstCube.dataset.prizeId = prize.id;
-      firstCube.dataset.prizeType = prize.type;
-      firstCube.dataset.prizeValue = prize.value;
-      
-      firstCube.innerHTML = '';
-      
-      if (prize.type === 'coin') {
-        const img = document.createElement('img');
-        img.src = 'assets/Coin.svg';
-        img.alt = 'Coin';
-        img.style.width = '70px';
-        img.style.height = '70px';
-        img.style.objectFit = 'contain';
-        img.style.margin = 'auto';
-        firstCube.appendChild(img);
-        
-        const valueText = document.createElement('div');
-        valueText.textContent = prize.value;
-        valueText.style.position = 'absolute';
-        valueText.style.top = '15%';
-        valueText.style.left = '25%';
-        valueText.style.transform = 'translate(-50%, -50%)';
-        valueText.style.fontSize = '1.5rem';
-        valueText.style.fontWeight = '700';
-        valueText.style.color = '#ffffff';
-        valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
-        firstCube.appendChild(valueText);
+      // Only regenerate cubes when not spinning
+      if (!isSpinning) {
+        const prize = selectPrize();
+        renderPrizeToCube(firstCube, prize);
       } else {
-        const container = document.createElement('div');
-        container.style.width = '80px';
-        container.style.height = '80px';
-        container.style.margin = 'auto';
-        firstCube.appendChild(container);
-        
-        lottie.loadAnimation({
-          container: container,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          path: prize.lottie
-        });
+        // During spin, just keep the existing prizes
+        // Don't regenerate - let the pre-set winner stay in place
       }
     }
     
@@ -1006,77 +970,34 @@
     isSpinning = true;
     spinButton.disabled = true;
 
+    // Select the winning prize ONCE
     const winningPrize = selectPrize();
     console.log('Selected prize:', winningPrize);
 
-    const cubes = Array.from(document.querySelectorAll('.cube'));
-    const containerCenter = wheelContainer.offsetWidth / 2;
-    let targetCube = null;
-    let minDistance = Infinity;
+    // Calculate the target stop position
+    // We want to spin for at least 3000-4000px (about 18-24 cubes)
+    const minSpinDistance = 3000 + Math.random() * 1000;
     
-    cubes.forEach(cube => {
-      const cubeRect = cube.getBoundingClientRect();
-      const containerRect = wheelContainer.getBoundingClientRect();
-      const cubeCenter = cubeRect.left + cubeRect.width / 2 - containerRect.left;
-      const distance = Math.abs(cubeCenter - containerCenter);
-      
-      if (distance < minDistance) {
-        minDistance = distance;
-        targetCube = cube;
-      }
-    });
+    // Find which cube index will be in the center after this distance
+    const cubes = Array.from(document.querySelectorAll('.cube'));
+    const totalCubes = cubes.length;
+    
+    // Calculate how many cube positions we'll scroll through
+    const cubePositionsToScroll = Math.floor(minSpinDistance / totalCubeWidth);
+    
+    // The cube that will end up in center (accounting for the circular nature)
+    winningCubeIndex = cubePositionsToScroll % totalCubes;
+    
+    // Place the winning prize in that cube RIGHT NOW
+    renderPrizeToCube(cubes[winningCubeIndex], winningPrize);
+    
+    console.log('Winning cube index:', winningCubeIndex, 'Prize:', winningPrize);
 
-    if (targetCube) {
-      targetCube.dataset.prizeId = winningPrize.id;
-      targetCube.dataset.prizeType = winningPrize.type;
-      targetCube.dataset.prizeValue = winningPrize.value;
-      
-      targetCube.innerHTML = '';
-      
-      if (winningPrize.type === 'coin') {
-        const img = document.createElement('img');
-        img.src = 'assets/Coin.svg';
-        img.alt = 'Coin';
-        img.style.width = '70px';
-        img.style.height = '70px';
-        img.style.objectFit = 'contain';
-        img.style.margin = 'auto';
-        targetCube.appendChild(img);
-        
-        const valueText = document.createElement('div');
-        valueText.textContent = winningPrize.value;
-        valueText.style.position = 'absolute';
-        valueText.style.top = '15%';
-        valueText.style.left = '25%';
-        valueText.style.transform = 'translate(-50%, -50%)';
-        valueText.style.fontSize = '1.5rem';
-        valueText.style.fontWeight = '700';
-        valueText.style.color = '#ffffff';
-        valueText.style.textShadow = '0 2px 8px rgba(0, 0, 0, 0.8)';
-        targetCube.appendChild(valueText);
-      } else {
-        const container = document.createElement('div');
-        container.style.width = '80px';
-        container.style.height = '80px';
-        container.style.margin = 'auto';
-        targetCube.appendChild(container);
-        
-        lottie.loadAnimation({
-          container: container,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          path: winningPrize.lottie
-        });
-      }
-    }
-
-    const originalSpeed = scrollSpeed;
     const startTime = Date.now();
     const duration = 5000;
     const maxSpeed = 25;
     
-    let spinningActive = true;
+    targetStopPosition = scrollPosition + minSpinDistance;
     
     function animateSpin() {
       if (!isSpinning) return;
@@ -1092,7 +1013,6 @@
         requestAnimationFrame(animateSpin);
       } else {
         scrollSpeed = 0;
-        spinningActive = false;
         
         setTimeout(() => {
           const cubes = Array.from(document.querySelectorAll('.cube'));
@@ -1101,6 +1021,7 @@
           let minDistance = Infinity;
           let distanceToSnap = 0;
           
+          // Find the cube closest to center
           cubes.forEach(cube => {
             const cubeRect = cube.getBoundingClientRect();
             const containerRect = wheelContainer.getBoundingClientRect();
@@ -1136,16 +1057,16 @@
                 setTimeout(() => {
                   centerCube.style.transition = 'transform 0.05s ease, border-color 0.05s ease, box-shadow 0.05s ease';
                 }, 300);
-              }
-              
-              setTimeout(() => {
-                if (centerCube) {
-                  const prizeData = prizes.find(p => p.id === centerCube.dataset.prizeId);
-                  if (prizeData) {
-                    showWinModal(prizeData);
+                
+                // Get the prize from the center cube's data
+                const finalPrize = prizes.find(p => p.id === centerCube.dataset.prizeId);
+                
+                setTimeout(() => {
+                  if (finalPrize) {
+                    showWinModal(finalPrize);
                   }
-                }
-              }, 200);
+                }, 200);
+              }
             }
           }
           
@@ -1157,6 +1078,7 @@
     animateSpin();
   });
 
+  // Initialize static reward icons
   const coinIds = ['coin1', 'coin5', 'coin10', 'coin25', 'coin50', 'coin100', 'coin250', 'coin500'];
   coinIds.forEach(id => {
     const container = document.getElementById(id);
@@ -1189,6 +1111,3 @@
     });
   });
 </script>
-
-</body>
-</html>
